@@ -144,6 +144,22 @@
                             str = date.getSeconds();
                         }
                         break;
+                    case 't': // am/pm
+                        var hour = date.getHours();
+                        if (hour >= 12) {
+                            str = I18N.AMPM[1].toLowerCase();
+                        } else {
+                            str = I18N.AMPM[0].toLowerCase();
+                        }
+                        break;
+                    case 'T': // AM/PM
+                        var hour = date.getHours();
+                        if (hour >= 12) {
+                            str = I18N.AMPM[1];
+                        } else {
+                            str = I18N.AMPM[0];
+                        }
+                        break;
                     default:
                         str = format.str;
                         break;
@@ -218,17 +234,17 @@
              * @private
              */
             _createDatePicker = function () {
-                var $table = $('<table cellspacing = "2px" cellpadding = "0" class="dt"/>');
+                var $table = $('<table cellspacing="2px" cellpadding="0" class="dt" />');
                 var $thead = $('<thead/>').appendTo($table);
                 //head
                 //head - tools
                 var $row = $('<tr class = "mainhead"/>');
                 //head - tools - next month
-                $table.$prevm = _createCell($row, '<i class="icon-datepicker-prev"/>', 1, NAV['prevm'], "prevm");
+                $table.$prevm = _createCell($row, '<i class="icon-datepicker-prev" />', 1, NAV['prevm'], "prevm");
                 //head - tools - title
-                $table.$title = $('<td class="title" colspan="5"/>').data('nav', NAV['title']).appendTo($row);
+                $table.$title = $('<td class="title" colspan="5" />').data('nav', NAV['title']).appendTo($row);
                 //head - tools - prev month
-                $table.$nextm = _createCell($row, '<i class="icon-datepicker-next"/>', 1, NAV['nextm'], "nextm");
+                $table.$nextm = _createCell($row, '<i class="icon-datepicker-next" />', 1, NAV['nextm'], "nextm");
                 $row.appendTo($thead);
                 //head - week names
                 $row = $('<tr/>');
@@ -243,7 +259,7 @@
                 }
                 $row.appendTo($thead);
                 //body
-                var $tbody = $('<tbody onselectstart="return false;"/>').appendTo($table);
+                var $tbody = $('<tbody />').appendTo($table);
                 for (i = 6; i > 0; i--) {
                     var $bodyRow = $('<tr/>').appendTo($tbody);
                     for (var t = 0; t < 7; t++) {
@@ -258,7 +274,7 @@
              * @private
              */
             _createMonthPicker = function () {
-                var $table = $('<table cellspacing = "2px" cellpadding = "0" class="mt"/>');
+                var $table = $('<table cellspacing="2px" cellpadding="0" class="mt" />');
                 //tbody
                 var $tbody = $('<tbody/>').appendTo($table);
                 //tbody - tools
@@ -267,16 +283,16 @@
                     $('<td class="month"/>').appendTo($row);
                 }
                 //tbody - 翻年按钮
-                _createCell($row, '<i class="icon-datepicker-prev"/>', 1, NAV['prevy'], ' prevy');
-                _createCell($row, '<i class="icon-datepicker-next"/>', 1, NAV['nexty'], ' nexty');
+                _createCell($row, '<i class="icon-datepicker-prev" />', 1, NAV['prevy'], ' prevy');
+                _createCell($row, '<i class="icon-datepicker-next" />', 1, NAV['nexty'], ' nexty');
                 //tbody - years
                 for (var m = 0; m < 5; m++) {
                     $row = $('<tr/>').appendTo($tbody);
-                    $('<td class="month"/><td class="month"/>' +
-                        '<td class="year"/><td class="year"/>').appendTo($row);
+                    $('<td class="month" /><td class="month" />' +
+                        '<td class="year" /><td class="year" />').appendTo($row);
                 }
                 //foot - buttons
-                var $tfoot = $('<tfoot class="buttonpane"/>').appendTo($table);
+                var $tfoot = $('<tfoot class="buttonpane" />').appendTo($table);
                 $row = $('<tr/>').appendTo($tfoot);
                 //tbody - 确定与取消
                 _createCell($row, I18N["OK"], 4, NAV['mok'], 'ok');
@@ -289,7 +305,7 @@
              * @private
              */
             _createButtonPane = function () {
-                var $buttonpane = $('<table class="buttonpane"/>');
+                var $buttonpane = $('<table class="buttonpane" />');
                 var $row = $('<tr/>');
                 // clear button
                 _createCell($row, I18N["CLEAR"], null, NAV['clear'], 'clear');
@@ -630,17 +646,35 @@
                     table.$h.val('00');
                     table.$m.val('00');
                     table.$s.val('00');
+                    if (viewmode == CONSTS.VIEWMODE.HMT || viewmode == CONSTS.VIEWMODE.YMDHMT || viewmode == CONSTS.VIEWMODE.HMST || viewmode == CONSTS.VIEWMODE.YMDHMST) {
+                        table.$h.val('12');
+                        table.$z.val(I18N.AMPM[0]);
+                    }
                     return;
                 }
 
                 // Reset seconds if they are not relevant.
-                if (viewmode == CONSTS.VIEWMODE.HM || viewmode == CONSTS.VIEWMODE.YMDHM) {
+                if (viewmode == CONSTS.VIEWMODE.HM || viewmode == CONSTS.VIEWMODE.YMDHM || viewmode == CONSTS.VIEWMODE.HMT || viewmode == CONSTS.VIEWMODE.YMDHMT) {
                     date.setSeconds(0);
                 }
 
                 var hour = date.getHours() + '',
                     minute = date.getMinutes() + '',
-                    second = date.getSeconds() + '';
+                    second = date.getSeconds() + '',
+                    PM = I18N.AMPM[0];
+                if (viewmode == CONSTS.VIEWMODE.HMT || viewmode == CONSTS.VIEWMODE.YMDHMT || viewmode == CONSTS.VIEWMODE.HMST || viewmode == CONSTS.VIEWMODE.YMDHMST) {
+                    if (hour == 0) {
+                        hour = 12;
+                    }
+                    else if (hour == 12) {
+                        PM = I18N.AMPM[1];
+                    }
+                    else if (hour > 12) {
+                        PM = I18N.AMPM[1];
+                        hour -= 12;
+                    }
+                    table.$z.val(PM);
+                }
                 table.$h.val(utilsLeftPad(hour, 2, '0'));
                 table.$m.val(utilsLeftPad(minute, 2, '0'));
                 table.$s.val(utilsLeftPad(second, 2, '0'));
@@ -654,8 +688,41 @@
              */
             _doTimeInc = function (timetable, input) {
                 var inputType = input.data('time');
-                if (inputType === 'h') {
+                if (inputType === 't') {
+                    var hours = (currentDate.getHours() + 12) % 12;
+                    var PM = timetable.$z.val();
+                    if (PM == I18N.AMPM[0]) {
+                        PM = I18N.AMPM[1];
+                    }
+                    else {
+                        PM = I18N.AMPM[0];
+                    }
+                    currentDate.setHours(hours);
+                    timetable.$z.val(PM);
+                } else if (inputType === 'h') {
+                    var tz = 24;
+                    var PM = '';
+                    if (options.viewMode == CONSTS.VIEWMODE.HMST || options.viewMode == CONSTS.VIEWMODE.HMT || options.viewMode == CONSTS.VIEWMODE.YMDHMST || options.viewMode == CONSTS.VIEWMODE.YMDHMT) {
+                        tz = 12;
+                        var PM = timetable.$z.val();
+                    }
                     var hours = (currentDate.getHours() + 1) % 24;
+                    if (tz == 12 && (hours == 12 || hours == 0)) {
+                        if (PM == I18N.AMPM[0]) {
+                            PM = I18N.AMPM[1];
+                        }
+                        else {
+                            PM = I18N.AMPM[0];
+                        }
+                        timetable.$z.val(PM);
+                    }
+
+                    if (tz == 12 && hours < 1) {
+                        hours += 12;
+                    }
+                    else if (tz == 12 && hours > 12) {
+                        hours -= 12;
+                    }
                     currentDate.setHours(hours);
                     timetable.$h.val(utilsLeftPad(hours, 2, '0'));
                 } else if (inputType === 'm') {
@@ -678,8 +745,41 @@
              */
             _doTimeDec = function (timetable, input) {
                 var inputType = input.data('time');
-                if (inputType === 'h') {
+                if (inputType === 't') {
+                    var hours = (currentDate.getHours() + 12) % 12;
+                    var PM = timetable.$z.val();
+                    if (PM == I18N.AMPM[0]) {
+                        PM = I18N.AMPM[1];
+                    }
+                    else {
+                        PM = I18N.AMPM[0];
+                    }
+                    currentDate.setHours(hours);
+                    timetable.$z.val(PM);
+                } else if (inputType === 'h') {
+                    var tz = 24;
+                    var PM = '';
+                    if (options.viewMode == CONSTS.VIEWMODE.HMST || options.viewMode == CONSTS.VIEWMODE.HMT || options.viewMode == CONSTS.VIEWMODE.YMDHMST || options.viewMode == CONSTS.VIEWMODE.YMDHMT) {
+                        tz = 12;
+                        var PM = timetable.$z.val();
+                    }
                     var hours = (currentDate.getHours() + 23) % 24;
+                    if (tz == 12 && hours == 11) {
+                        if (PM == I18N.AMPM[0]) {
+                            PM = I18N.AMPM[1];
+                        }
+                        else {
+                            PM = I18N.AMPM[0];
+                        }
+                        timetable.$z.val(PM);
+                    }
+
+                    if (tz == 12 && hours < 1) {
+                        hours += 12;
+                    }
+                    else if (tz == 12 && hours > 12) {
+                        hours -= 12;
+                    }
                     currentDate.setHours(hours);
                     timetable.$h.val(utilsLeftPad(hours, 2, '0'));
                 } else if (inputType === 'm') {
@@ -707,9 +807,9 @@
              * @param {String} viewmode One of the constants VIEWMODE.XXX
              */
             _createTimePicker = function (viewmode) {
-                var $table = $('<table cellspacing = "0" cellpadding = "0" class="tt"/>');
+                var $table = $('<table cellspacing="0" cellpadding="0" class="tt" />');
                 var $tbody = $('<tbody>').appendTo($table);
-                $table.$h = $('<input type="number" min="0" max="23" maxlength="2"/>').data('time', 'h').change(function () {
+                $table.$h = $('<input type="number" min="0" max="23" maxlength="2" />').data('time', 'h').change(function () {
                     var value = parseInt(this.value, 10);
                     var hours = clampNumber(value, 0, 23);
                     // Replace the value if it has not been not a valid number
@@ -721,7 +821,7 @@
                 }).focus(function () {
                     $table.focus = $(this);
                 });
-                $table.$m = $('<input type="number" min="0" max="59" maxlength="2"/>').data('time', 'm').change(function () {
+                $table.$m = $('<input type="number" min="0" max="59" maxlength="2" />').data('time', 'm').change(function () {
                     var value = parseInt(this.value, 10);
                     var minutes = clampNumber(value, 0, 59);
                     // Replace the value if it has not been not a valid number
@@ -733,7 +833,7 @@
                 }).focus(function () {
                     $table.focus = $(this);
                 });
-                $table.$s = $('<input type="number" min="0" max="59" maxlength="2"/>').data('time', 's').change(function () {
+                $table.$s = $('<input type="number" min="0" max="59" maxlength="2" />').data('time', 's').change(function () {
                     var value = parseInt(this.value, 10);
                     var seconds = clampNumber(value, 0, 59);
                     // Replace the value if it has not been not a valid number
@@ -745,20 +845,32 @@
                 }).focus(function () {
                     $table.focus = $(this);
                 });
+                $table.$z = $('<input type="text" maxlength="2" />').data('time', 't').change(function () {
+                    var PM = this.value.toUpperCase();
+                    if (PM != I18N.AMPM[0] && PM != I18N.AMPM[1]) PM = I18N.AMPM[0];
+                    // Replace the value if it has not been not a valid number
+                    this.value = PM;
+                    utilsApplyFunc(picker, options.onDateChange, arguments);
+                }).focus(function () {
+                    $table.focus = $(this);
+                });
                 $table.focus = $table.$m;
-                var $add = $('<td/>').append($('<i class="icon-datepicker-plus"/>')).data('nav', NAV['plus']);
-                var $min = $('<td/>').append($('<i class="icon-datepicker-minus"/>')).data('nav', NAV['minus']);
-                var $row = $('<tr/>').append($('<td rowspan="2"/>').text(I18N.TIME))
-                    .append($('<td rowspan="2"/>').append($table.$h))
-                    .append($('<td class="common" rowspan="2"/>').text(':'))
-                    .append($('<td rowspan="2"/>').append($table.$m));
+                var $add = $('<td/>').append($('<i class="icon-datepicker-plus />')).data('nav', NAV['plus']);
+                var $min = $('<td/>').append($('<i class="icon-datepicker-minus" />')).data('nav', NAV['minus']);
+                var $row = $('<tr/>').append($('<td rowspan="2" />').text(I18N.TIME))
+                    .append($('<td rowspan="2" />').append($table.$h))
+                    .append($('<td class="common" rowspan="2" />').text(':'))
+                    .append($('<td rowspan="2" />').append($table.$m));
 
                 // Only add the seconds input if it's requested
                 if (viewmode != CONSTS.VIEWMODE.YMDHM && viewmode != CONSTS.VIEWMODE.HM) {
-                    $row.append($('<td class="common" rowspan="2"/>').text(':'))
+                    $row.append($('<td class="common" rowspan="2" />').text(':'))
                         .append($('<td rowspan="2"/>').append($table.$s));
                 }
 
+                if (viewmode == CONSTS.VIEWMODE.HMST || viewmode == CONSTS.VIEWMODE.HMT || viewmode == CONSTS.VIEWMODE.YMDHMST || viewmode == CONSTS.VIEWMODE.YMDHMT) {
+                    $row.append($('<td rowspan="2"/>').append($table.$z));
+                }
                 $row.append($add).appendTo($tbody);
                 $('<tr/>').append($min).appendTo($tbody);
                 return $table;
@@ -847,7 +959,7 @@
                                 } else {
                                     currentDate = new Date(today);
                                     _loadDateData($datetable, today);
-                                    _loadTimeData($timetable, today);
+                                    _loadTimeData($timetable, today, options.viewMode);
                                     cache.selectedDate && cache.selectedDate.removeClass('selected');
                                     cache.selectedDate = $datetable.find('td.today').addClass('selected');
                                 }
@@ -932,13 +1044,17 @@
 
         //initialize all panels
         // wrap widget in a form element to be able to turn off html5 form validation
-        var $wrapper = $('<form novalidate/>').appendTo($el).addClass(options.baseCls);
+        var VIEWMODE = CONSTS.VIEWMODE;
+        var Cls = options.baseCls;
+        if (Cls == 'perfect-datetimepicker' && (options.viewMode == VIEWMODE.HMT || options.viewMode == VIEWMODE.HMST || options.viewMode == VIEWMODE.YMDHMT || options.viewMode == VIEWMODE.YMDHMST)) {
+            Cls += ' perfect-datetimepicker12';
+        }
+        var $wrapper = $('<form novalidate />').appendTo($el).addClass(Cls);
         $datetable = _createDatePicker();
         _loadDateData($datetable, new Date(currentDate));
         $monthtable = _createMonthPicker();
         $timetable = _createTimePicker(options.viewMode);
         var $buttonpane = _createButtonPane();
-        var VIEWMODE = CONSTS.VIEWMODE;
 
         switch (options.viewMode) {
             case VIEWMODE.YM : // yyyyMM
@@ -947,6 +1063,8 @@
                 break;
             case VIEWMODE.HM : // HHmm
             case VIEWMODE.HMS : // HHmmss
+            case VIEWMODE.HMT: // HHmm AM/PM
+            case VIEWMODE.HMST: // HHmmss AM/PM
                 _loadTimeData($timetable, currentDate, options.viewMode);
                 $wrapper.append($timetable.show());
                 _addTimeOptPane($wrapper);
@@ -957,8 +1075,10 @@
                 $wrapper.append($buttonpane);
                 break;
 
-            case VIEWMODE.YMDHMS:
-            case VIEWMODE.YMDHM:
+            case VIEWMODE.YMDHMS: //yyyyMMdd HHmmss
+            case VIEWMODE.YMDHM: //yyyyMMdd HHmm
+            case VIEWMODE.YMDHMST: //yyyyMMdd HHmmss AM/PM
+            case VIEWMODE.YMDHMT: //yyyyMMdd HHmm AM/PM
             default : // yyyyMMddHHmm(ss)
                 $datetable.appendTo($wrapper).show();
                 $monthtable.hide().appendTo($wrapper);
@@ -980,6 +1100,9 @@
                 //如果不包含时间，则把时间计为00:00:00
                 date.setHours(0, 0, 0, 0);
             }
+            if (date && (options.viewMode === viewMode.YMDHMT || options.viewMode === viewMode.YMDHMST || options.viewMode === viewMode.YMHMT || options.viewMode === viewMode.HMT || options.viewMode === viewMode.HMST) && date.getHours()<12 && this.$timetable.$z.val() == I18N.AMPM[1]) {
+                date = new Date(date.setHours(12+date.getHours()));
+            }
             return date;
         };
 
@@ -987,8 +1110,8 @@
         picker.setValue = function (value) {
             if (value instanceof Date) {
                 currentDate = value;
-                _loadDateData($datetable, value);
-                _loadMonthData($monthtable, value);
+                _loadDateData($datetable, new Date(value));
+                _loadMonthData($monthtable, new Date(value));
                 _loadTimeData($timetable, value, options.viewMode);
             }
         };
@@ -1033,7 +1156,8 @@
                 TODAY: "今天",
                 OK: "确定",
                 CURRENT: "当前",
-                TIME: "时间"
+                TIME: "时间",
+                AMPM: ["AM", "PM"]
             },
             en: {
                 SDN: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -1044,7 +1168,8 @@
                 TODAY: "Today",
                 OK: "OK",
                 CURRENT: "Now",
-                TIME: "Time"
+                TIME: "Time",
+                AMPM: ["AM", "PM"]
             },
             es: {
                 SDN: ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"],
@@ -1055,7 +1180,8 @@
                 TODAY: "Hoy",
                 OK: "Ok",
                 CURRENT: "Ahora",
-                TIME: "Tiempo"
+                TIME: "Tiempo",
+                AMPM: ["AM", "PM"]
             },
             de: {
                 SDN: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
@@ -1066,7 +1192,20 @@
                 TODAY: "Heute",
                 OK: "OK",
                 CURRENT: "Jetzt",
-                TIME: "Zeit"
+                TIME: "Zeit",
+                AMPM: ["AM", "PM"]
+            },
+            fr: {
+                SDN: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+                MN: ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jui", "Aou", "Sep", "Oct", "Nov", "Déc"],
+                DN: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+                CALENDAR: "Calendrier",
+                CLEAR: "Effacer",
+                TODAY: "Aujourd'hui",
+                OK: "OK",
+                CURRENT: "Maintenant",
+                TIME: "Heure",
+                AMPM: ["AM", "PM"]
             },
             nl: {
                 SDN: ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"],
@@ -1077,7 +1216,8 @@
                 TODAY: "Vandaag",
                 OK: "OK",
                 CURRENT: "Nu",
-                TIME: "Tijd"
+                TIME: "Tijd",
+                AMPM: ["AM", "PM"]
             }
         },
 
@@ -1087,7 +1227,11 @@
             HMS: 'HMS', // HHmmss
             HM: 'HM', // HHmm
             YMDHMS: 'YMDHMS', // yyyyMMddHHmmss
-            YMDHM: 'YMDHM' // yyyyMMddHHmm
+            YMDHM: 'YMDHM', // yyyyMMddHHmm
+            HMST: 'hMS', // HHmmss AM/PM
+            HMT: 'hM', // HHmm AM/PM
+            YMDHMST: 'YMDhMS', // yyyyMMddHHmmss AM/PM
+            YMDHMT: 'YMDhM' // yyyyMMddHHmm AM/PM
         },
 
         MINYEAR: 1900,
